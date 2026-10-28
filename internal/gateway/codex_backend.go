@@ -223,6 +223,10 @@ func (s *Server) codexBackend(w http.ResponseWriter, r *http.Request) {
 				writeError(w, provider.Responses, 400, gone)
 				return
 			}
+			if msg := compactCapError(r, model, on); msg != "" {
+				writeError(w, provider.Responses, http.StatusTooManyRequests, msg)
+				return
+			}
 			if on != nil {
 				s.codexUpstreamOn(w, r, rest, body, on)
 				return
@@ -721,6 +725,34 @@ func compactOn(r *http.Request, model string) *provider.Provider {
 		return &others[0]
 	}
 	return nil
+}
+
+// compactCapError holds the account a legacy native compaction will spend,
+// whether relayed on Codex's sign-in or signed by compactOn or sealedCompact.
+// Routing doesn't see /responses/compact, so its caps must be asked here too.
+func compactCapError(r *http.Request, model string, on *provider.Provider) string {
+	id, user := codexServed(provider.CodexBase, r.Header, on)
+	if id != "codex" || user == "" {
+		return ""
+	}
+	p, err := provider.Find(id)
+	if err != nil || !p.On() || p.Account == nil {
+		return ""
+	}
+	acct := p
+	if on != nil {
+		acct = on
+	}
+	readCareful(r.Context(), []provider.Provider{*p}, []string{model})
+	now := time.Now()
+	h := capHeld(*p, *acct, model, now)
+	if h == nil {
+		return ""
+	}
+	ws := barredOf([]candidate{{p: *acct, model: model, rest: id, capped: h}}, *p, false, provider.Responses, nil)
+	held, _ := heldReasons(ws, now)
+	capped, noCredits := heldBy(ws)
+	return fmt.Sprintf("usage limit reached: native compaction for %q is held in magpie — %s; %s. No other account is tried for this native compaction", model, strings.Join(held, "; "), heldAdvice(capped, noCredits))
 }
 
 // codexAccounts is what a request for one of Codex's own models is served
