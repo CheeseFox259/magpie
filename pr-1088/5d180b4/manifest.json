@@ -1,0 +1,29 @@
+{
+  "summary": "PR 在 Agent 页接入 OpenClaw：未安装时在「安装其他 Agent」中给出官方安装脚本，接入后可在 Agent 行内编辑主模型与有序降级模型并自动保存，同时补充官方彩色图标和多语文案。",
+  "scenes": [
+    {
+      "title": "OpenClaw 安装入口",
+      "shots": [
+        {
+          "file": "01-agents-install-collapsed.png",
+          "caption": "Agent 页：安装其他 Agent 区域尚未展开",
+          "width": 2560
+        },
+        {
+          "file": "02-openclaw-install-list.png",
+          "caption": "展开后的安装列表，可查看 OpenClaw 的官方安装脚本",
+          "width": 2168
+        }
+      ]
+    }
+  ],
+  "video": "preview.mp4",
+  "poster": "poster.png",
+  "errors": [],
+  "leak": false,
+  "skipped": null,
+  "mismatch": "",
+  "unseen": "沙盒未安装 OpenClaw，也没有 OpenClaw 配置，因此无法展示接入后的主模型／降级模型链编辑器、排序与清空、断开恢复、JSON5 备份及只读错误；只能看到安装入口。",
+  "interactive": true,
+  "pages": 1
+}
